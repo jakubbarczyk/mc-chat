@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MC Chat</title>
+</head>
+<body style="background: lightblue;">
+  <h1>Blue Window</h1>
+  <output></output>
+  <input type="text" id="text-input">
+  <button type="button" id="send-button">Send</button>
+
+  <script>
+    const textInput = document.querySelector('#text-input');
+    const sendButton = document.querySelector('#send-button');
+
+    let messagePort;
+
+    window.addEventListener('message', onMessage);
+
+    sendButton.addEventListener('click', () => {
+      const message = {
+        style: 'color: blue;',
+        author: 'BLUE',
+        content: textInput.value
+      };
+
+      textInput.value = '';
+      messagePort.postMessage(message);
+    });
+
+    const output = document.querySelector('output');
+
+    function onMessage(event) {
+      if (messagePort) {
+        const message = event.data;
+        const paragraph = document.createElement('p');
+
+        paragraph.style = message.style;
+        paragraph.textContent = `${message.author}: ${message.content}`;
+
+        output.append(paragraph);
+      } else {
+        messagePort = event.ports[0];
+      }
+    }
+  </script>
+</body>
+</html>

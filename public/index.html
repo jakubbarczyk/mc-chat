@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MC Chat</title>
+</head>
+<body>
+  <h1>MC Chat</h1>
+
+  <button type="button" id="red-chat-window-button">Red chat window</button>
+  <button type="button" id="blue-chat-window-button">Blue chat window</button>
+
+  <output></output>
+
+  <script>
+    class Chat {
+      #windows = [];
+
+      open(url, callback) {
+        this.window = window.open(url, '_blank');
+        this.channel = new MessageChannel();
+
+        this.window.addEventListener('load', () => {
+          this.window.postMessage('', '*', [this.channel.port2]);
+        });
+
+        this.#windows.push(this.window);
+
+        this.channel.port1.addEventListener('message', event => {
+          callback(event);
+          this.#windows.forEach(window => window.postMessage(event.data));
+        });
+
+        this.channel.port1.start();
+      }
+    }
+
+    const chat = new Chat();
+
+    document
+      .querySelector('#red-chat-window-button')
+      .addEventListener('click', () => chat.open('http://localhost:3000/red-chat-window.html', onMessage));
+
+    document
+      .querySelector('#blue-chat-window-button')
+      .addEventListener('click', () => chat.open('http://localhost:3000/blue-chat-window.html', onMessage));
+
+    const output = document.querySelector('output');
+
+    function onMessage(event) {
+      const message = event.data;
+      const paragraph = document.createElement('p');
+
+      paragraph.style = message.style;
+      paragraph.textContent = `${message.author}: ${message.content}`;
+
+      output.append(paragraph);
+    }
+  </script>
+</body>
+</html>
